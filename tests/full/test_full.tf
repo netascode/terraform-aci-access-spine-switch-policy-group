@@ -16,35 +16,38 @@ terraform {
 module "main" {
   source = "../.."
 
-  name        = "ABC"
-  alias       = "ALIAS"
-  description = "DESCR"
+  name        = "SW-PG1"
+  lldp_policy = "LLDP-ON"
 }
 
-data "aci_rest_managed" "fvTenant" {
-  dn = "uni/tn-ABC"
+data "aci_rest_managed" "infraSpineAccNodePGrp" {
+  dn = "uni/infra/funcprof/spaccnodepgrp-${module.main.name}"
 
   depends_on = [module.main]
 }
 
-resource "test_assertions" "fvTenant" {
-  component = "fvTenant"
+resource "test_assertions" "infraSpineAccNodePGrp" {
+  component = "infraSpineAccNodePGrp"
 
   equal "name" {
     description = "name"
-    got         = data.aci_rest_managed.fvTenant.content.name
-    want        = "ABC"
+    got         = data.aci_rest_managed.infraSpineAccNodePGrp.content.name
+    want        = module.main.name
   }
+}
 
-  equal "nameAlias" {
-    description = "nameAlias"
-    got         = data.aci_rest_managed.fvTenant.content.nameAlias
-    want        = "ALIAS"
-  }
+data "aci_rest_managed" "infraRsSpinePGrpToLldpIfPol" {
+  dn = "${data.aci_rest_managed.infraSpineAccNodePGrp.id}/rsspinePGrpToLldpIfPol"
 
-  equal "descr" {
-    description = "descr"
-    got         = data.aci_rest_managed.fvTenant.content.descr
-    want        = "DESCR"
+  depends_on = [module.main]
+}
+
+resource "test_assertions" "infraRsSpinePGrpToLldpIfPol" {
+  component = "infraRsSpinePGrpToLldpIfPol"
+
+  equal "tnLldpIfPolName" {
+    description = "tnLldpIfPolName"
+    got         = data.aci_rest_managed.infraRsSpinePGrpToLldpIfPol.content.tnLldpIfPolName
+    want        = "LLDP-ON"
   }
 }

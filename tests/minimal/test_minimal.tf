@@ -16,33 +16,21 @@ terraform {
 module "main" {
   source = "../.."
 
-  name = "ABC"
+  name = "SW-PG1"
 }
 
-data "aci_rest_managed" "fvTenant" {
-  dn = "uni/tn-ABC"
+data "aci_rest_managed" "infraSpineAccNodePGrp" {
+  dn = "uni/infra/funcprof/spaccnodepgrp-${module.main.name}"
 
   depends_on = [module.main]
 }
 
-resource "test_assertions" "fvTenant" {
-  component = "fvTenant"
+resource "test_assertions" "infraSpineAccNodePGrp" {
+  component = "infraSpineAccNodePGrp"
 
   equal "name" {
     description = "name"
-    got         = data.aci_rest_managed.fvTenant.content.name
-    want        = "ABC"
-  }
-
-  equal "nameAlias" {
-    description = "nameAlias"
-    got         = data.aci_rest_managed.fvTenant.content.nameAlias
-    want        = ""
-  }
-
-  equal "descr" {
-    description = "descr"
-    got         = data.aci_rest_managed.fvTenant.content.descr
-    want        = ""
+    got         = data.aci_rest_managed.infraSpineAccNodePGrp.content.name
+    want        = module.main.name
   }
 }
